@@ -37,6 +37,9 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Linker>
+			<Add option="-lglfw3 -lopengl32 -lgdi32" />
+		</Linker>
 		<Unit filename="glad.c">
 			<Option compilerVar="CC" />
 		</Unit>

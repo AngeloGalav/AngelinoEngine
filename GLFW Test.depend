@@ -13,3 +13,18 @@
 	<winapifamily.h>
 	<dlfcn.h>
 
+1604435795 source:c:\users\asus\documents\coding tests\angelinoengine\glad.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<glad/glad.h>
+	<windows.h>
+	<winapifamily.h>
+	<dlfcn.h>
+
+1604441527 source:c:\users\asus\documents\coding tests\angelinoengine\main.cpp
+	<glad/glad.h>
+	<GLFW/glfw3.h>
+	<iostream>
+	<fstream>
+

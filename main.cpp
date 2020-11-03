@@ -27,6 +27,8 @@ int main()
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
+    //openGL compiles shaders at runtime
+
     float vertices[] = {
         -0.5f, -0.5f, 0.0f,
          0.5f, -0.5f, 0.0f,
@@ -63,6 +65,29 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 
+    //code added 3/11/2020
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+    //compile shader by binding to shaderID and compiling the source code
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+
+    //check if compilazion is successfull
+    int  success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+    if(!success)
+    {
+        //works similarly to infoLog in unity
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    } else
+    {
+        std::cout << "SHADER COMPILER SUCCESSFULLY!" << std::endl;
+    }
 
     double i=0;
     glViewport(0, 0, 800, 600); //sets size of the viewport
@@ -73,7 +98,7 @@ int main()
         i+=0.01;
         if (i > 1) { i = 0; }
         processInput(window);
-        std::cout << i << std::endl;
+        //std::cout << i << std::endl;
         glClearColor(0.2f, i, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT); //we clear the color buffer
 
