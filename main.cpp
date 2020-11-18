@@ -27,13 +27,24 @@ int main()
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
+    const char *fragmentShaderSource = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\0";
+
     //openGL compiles shaders at runtime
 
-    float vertices[] = {
+    float vertices[] = {        //vertices
         -0.5f, -0.5f, 0.0f,
          0.5f, -0.5f, 0.0f,
          0.0f,  0.5f, 0.0f
     };
+
+    /*
+    GLFW Initialization
+    */
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -58,7 +69,12 @@ int main()
         return -1;
     }
 
-    //code added 28/10/2020
+
+    /*
+    SHADERS COMPILATION
+    */
+
+    //vertex input shader
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -70,28 +86,86 @@ int main()
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
     //compile shader by binding to shaderID and compiling the source code
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);  //1 = number of strings passed as vertex source
     glCompileShader(vertexShader);
 
 
-    //check if compilazion is successfull
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    //fragment shader compilation (18/11/2020)
+    unsigned int fragmentShader;
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
 
-    if(!success)
+    //Shader compilation debug and console
+
+    int  successVertex;
+    int  successFrag;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &successVertex);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &successFrag);
+
+    if(!successVertex)
     {
         //works similarly to infoLog in unity
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     } else
     {
-        std::cout << "SHADER COMPILER SUCCESSFULLY!" << std::endl;
+        std::cout << "VERTEX SHADER COMPILED SUCCESSFULLY!" << std::endl;
+    }
+
+    if(!successFrag)
+    {
+        //works similarly to infoLog in unity
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    } else
+    {
+        std::cout << "FRAGMENT SHADER COMPILED SUCCESSFULLY!" << std::endl;
     }
 
     double i=0;
     glViewport(0, 0, 800, 600); //sets size of the viewport
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);  //calls the function whenever the framebuffer size (window size) is changed
+
+    /*
+    Shader Program and Shader Program Object
+    */
+
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+
+    //previous written shaders attachment to shader program
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram); //links shaders in the shader program
+
+
+    int successShaderProgram;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &successShaderProgram);
+    if(!successShaderProgram) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog); //programinfolog instead of shaderinfolog
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING\n" << infoLog << std::endl;
+    } else
+    {
+        std::cout << "SHADER PROGRAM LINKED SUCCESSFULLY!" << std::endl;
+    }
+
+
+    glUseProgram(shaderProgram);
+
+
+    //deleting shaders after we have used it
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+
+
+
+
+    /*
+    WINDOW FUNCTIONS
+    */
 
     while(!glfwWindowShouldClose(window)) //checks if window is closed
     {
