@@ -4,7 +4,11 @@
 #include <fstream>
 
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+const unsigned int wHeight = 600;
+const unsigned int wWidth = 800;
+
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) //when windows is resized, call this function
 {
     glViewport(0, 0, width, height);
 }
@@ -17,8 +21,6 @@ void processInput(GLFWwindow *window) //pretty much self explanatory
 
 int main()
 {
-    //readfile code here
-
     //vertex shader code
     const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -37,9 +39,15 @@ int main()
     //openGL compiles shaders at runtime
 
     float vertices[] = {        //vertices
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
+        0.5f, 0.5f, 0.0f,
+        0.5f,-0.5f, 0.0f,
+       -0.5f,-0.5f, 0.0f,
+       -0.5f, 0.5f, 0.0f
+    };
+
+    unsigned int indices[] ={
+        0,1,3, //first triangle
+        1,2,3 //second triangle
     };
 
     /*
@@ -53,7 +61,7 @@ int main()
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "CoolWindow", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -62,6 +70,7 @@ int main()
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);  //calls the function whenever the framebuffer size (window size) is changed
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -71,15 +80,37 @@ int main()
 
 
     /*
-    SHADERS COMPILATION
+    VERTEX BUFFER OBJECT & VERTEX INTERPRETATION
     */
 
     //vertex input shader
     unsigned int VBO;
     glGenBuffers(1, &VBO);
+
+    //vertex array object generation
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);  //we can also generate multiple VAO and VBOs at the same time using an array
+    glBindVertexArray(VAO);
+
+    //vbo generation
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+
+    //element buffer object so we can use more triangles for a single element and specify the order of what to use
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof (indices), indices, GL_STATIC_DRAW);
+
+
+    //telling OpenGL how to interpret the Vertex values (related to VBOs)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*) 0);
+    glEnableVertexAttribArray(0); //0 is the location of our vertices
+
+    /*
+    SHADERS COMPILATION
+    */
 
     //code added 3/11/2020
     unsigned int vertexShader;
@@ -96,8 +127,7 @@ int main()
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
 
-    //Shader compilation debug and console
-
+    //debug and console for shader compilation
     int  successVertex;
     int  successFrag;
     char infoLog[512];
@@ -124,10 +154,6 @@ int main()
         std::cout << "FRAGMENT SHADER COMPILED SUCCESSFULLY!" << std::endl;
     }
 
-    double i=0;
-    glViewport(0, 0, 800, 600); //sets size of the viewport
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);  //calls the function whenever the framebuffer size (window size) is changed
-
     /*
     Shader Program and Shader Program Object
     */
@@ -151,34 +177,38 @@ int main()
         std::cout << "SHADER PROGRAM LINKED SUCCESSFULLY!" << std::endl;
     }
 
-
-    glUseProgram(shaderProgram);
-
-
-    //deleting shaders after we have used it
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-
-
-
-
     /*
     WINDOW FUNCTIONS
     */
 
+    double i=0;
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //WIREFRAME MODE ON
+
+
     while(!glfwWindowShouldClose(window)) //checks if window is closed
     {
-        i+=0.01;
+        //i+=0.01;
         if (i > 1) { i = 0; }
         processInput(window);
         //std::cout << i << std::endl;
         glClearColor(0.2f, i, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT); //we clear the color buffer
 
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO); //binding to a vao automatically also binds every vbos or ebos in it
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*) 0);
+        //glDrawArrays(GL_TRIANGLES, 0, 3); not used when using EBOs
+
+
         glfwSwapBuffers(window); // we are using double buffers to display the image to avoid flickeringS
         glfwPollEvents();        // checks if any events are triggered
     }
+
+    //deleting shaders after we have used it
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
 
     glfwTerminate(); //deallocates all resources
     return 0;
