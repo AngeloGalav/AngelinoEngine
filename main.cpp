@@ -1,11 +1,9 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <fstream>
-
+#include "Shader.h"
 
 const unsigned int wHeight = 600;
 const unsigned int wWidth = 800;
+
+bool wireframe = false;
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) //when windows is resized, call this function
@@ -21,36 +19,56 @@ void processInput(GLFWwindow *window) //pretty much self explanatory
 
 int main()
 {
+    /**
+        SHADER SOURCE CODE
+    */
+
     //vertex shader code
     const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 1) in vec3 aColor;\n"
+    "out vec3 ourColor; // output a color to the fragment shader\n"
     "void main()\n"
     "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   gl_Position = vec4(aPos, 1.0);\n"
+    "   ourColor = aColor;\n"
     "}\0";
 
+    //added uniform values to shader
     const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "in vec4 ourColor;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = ourColor;\n"
     "}\0";
 
     //openGL compiles shaders at runtime
 
-    float vertices[] = {        //vertices
+    /* float vertices[] = {        //vertices
         0.5f, 0.5f, 0.0f,
         0.5f,-0.5f, 0.0f,
        -0.5f,-0.5f, 0.0f,
        -0.5f, 0.5f, 0.0f
     };
+    */
 
-    unsigned int indices[] ={
-        0,1,3, //first triangle
-        1,2,3 //second triangle
+    float vertices[] = {
+    // positions         // colors
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
     };
 
-    /*
+    unsigned int indices[] ={
+       /* 0,1,3, //first triangle
+        1,2,3 //second triangle
+        */
+        0,1,2
+
+    };
+
+    /**
     GLFW Initialization
     */
 
@@ -79,7 +97,7 @@ int main()
     }
 
 
-    /*
+    /**
     VERTEX BUFFER OBJECT & VERTEX INTERPRETATION
     */
 
@@ -105,10 +123,16 @@ int main()
 
 
     //telling OpenGL how to interpret the Vertex values (related to VBOs)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*) 0);
+
+    //vertex attributes
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0); //0 is the location of our vertices
 
-    /*
+    //color attributes
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*) (3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    /**
     SHADERS COMPILATION
     */
 
@@ -154,18 +178,19 @@ int main()
         std::cout << "FRAGMENT SHADER COMPILED SUCCESSFULLY!" << std::endl;
     }
 
-    /*
+
+    /**
     Shader Program and Shader Program Object
     */
 
     unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
 
+
     //previous written shaders attachment to shader program
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram); //links shaders in the shader program
-
 
     int successShaderProgram;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &successShaderProgram);
@@ -177,13 +202,17 @@ int main()
         std::cout << "SHADER PROGRAM LINKED SUCCESSFULLY!" << std::endl;
     }
 
-    /*
+
+    /**
     WINDOW FUNCTIONS
     */
 
     double i=0;
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //WIREFRAME MODE ON
+    if (wireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //WIREFRAME MODE ON
+    }
 
 
     while(!glfwWindowShouldClose(window)) //checks if window is closed
@@ -195,15 +224,26 @@ int main()
         glClearColor(0.2f, i, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT); //we clear the color buffer
 
+
+        float timeValue = glfwGetTime(); //to change value of color using our time
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor"); //not used since we're not using any uniform type data
         glUseProgram(shaderProgram);
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f); //not used since we're not using any uniform type data
+
+
         glBindVertexArray(VAO); //binding to a vao automatically also binds every vbos or ebos in it
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*) 0);
-        //glDrawArrays(GL_TRIANGLES, 0, 3); not used when using EBOs
+
+        //glDrawArrays(GL_TRIANGLES, 0, 3); //not used when using EBOs
 
 
         glfwSwapBuffers(window); // we are using double buffers to display the image to avoid flickeringS
         glfwPollEvents();        // checks if any events are triggered
     }
+
+
 
     //deleting shaders after we have used it
     glDeleteShader(vertexShader);
