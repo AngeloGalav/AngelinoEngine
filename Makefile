@@ -7,7 +7,7 @@ ${space} := ${space}# ${ } is a space. Neat huh?
 #END OFSPACE RECOGNITION
 
 EXEC_NAME = $(notdir $(subst ${ },_,$(shell pwd)) )
-RMV = rm -f *.o
+RMV = rm -f src/*.o
 
 ifneq ($(wildcard /usr/include/GLFW),)
 	DIR_PREFIX = /usr
@@ -37,14 +37,14 @@ CFLAGS = $(GLFLAGS) -I$(GL_INCLUDE_DIR) -Wall -O0
 
 all : $(EXEC_NAME) clean
 
-SRC = $(wildcard *.cpp)
+SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:.cpp=.o) # Considera i file .cpp ma che che hanno come suffisso .o
 
-$(EXEC_NAME) : $(OBJ) glad.o
+$(EXEC_NAME) : $(OBJ) src/glad.o
 	@echo "** Building main executable, aka $(EXEC_NAME) ..."
-	$(CC) -L$(DLIBS) -o $@ $(OBJ) glad.o $(CFLAGS)
+	$(CC) -L$(DLIBS) -o $@ $(OBJ) src/glad.o $(CFLAGS)
 
-%.o: %.cpp %.c
+%.o: %.cpp src/glad.c
 	@echo "** Building obj files..."
 	$(CC) -c $< -o $@
 

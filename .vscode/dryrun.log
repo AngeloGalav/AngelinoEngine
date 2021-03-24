@@ -1,0 +1,13 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/agala/Documents/Personal Projects/AngelinoEngine_2.0'
+echo "** Building obj files..."
+g++ -c src/main.cpp -o src/main.o
+echo "** Building obj files..."
+g++ -c src/Shader.cpp -o src/Shader.o
+g++ -lpthread -lglfw -lGL -lX11 -lXrandr -lXi -ldl  -I/usr/include/GLFW -Wall -O0   -c -o src/glad.o src/glad.c
+echo "** Building main executable, aka AngelinoEngine_2.0 ..."
+g++ -L/usr/lib/ -o AngelinoEngine_2.0 src/main.o src/Shader.o  src/glad.o -lpthread -lglfw -lGL -lX11 -lXrandr -lXi -ldl  -I/usr/include/GLFW -Wall -O0
+echo "** Removing object files..."
+rm -f src/*.o
+make: Leaving directory '/home/agala/Documents/Personal Projects/AngelinoEngine_2.0'
+ 
