@@ -1,4 +1,10 @@
-#include "Shader.h"
+#include "include/glad/glad.h"
+#include <GLFW/glfw3.h>
+#include <iostream>
+#include <cmath>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 const unsigned int wHeight = 600;
 const unsigned int wWidth = 800;
@@ -36,8 +42,8 @@ int main()
 
     //added uniform values to shader
     const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "in vec4 ourColor;\n"
+    "out vec3 FragColor;\n"
+    "in vec3 ourColor;\n"
     "void main()\n"
     "{\n"
     "   FragColor = ourColor;\n"
