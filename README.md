@@ -8,7 +8,7 @@ You can follow the same guide that I'm following at https://learnopengl.com/ .
 
 - [x] Core shader support
 - [x] Texture support
-- [x] Tranformation
+- [x] Linear Tranformations
 - [ ] Coordinate System
 - [ ] 3D Viewport
 - [ ] Camera system
