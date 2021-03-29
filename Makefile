@@ -3,7 +3,7 @@ CC = g++
 #SPACE RECOGNITION
 null :=
 space := ${null} ${null}
-${space} := ${space}# ${ } is a space. Neat huh?
+${space} := ${space}	# ${ } is a space. Neat huh?
 #END OFSPACE RECOGNITION
 
 EXEC_NAME = $(notdir $(subst ${ },_,$(shell pwd)) )
@@ -57,3 +57,7 @@ bnr :
 clean :
 	@echo "** Removing object files..."
 	$(RMV)
+
+clean_all :
+	@echo "** Removing all generated files..."
+	$(RMV) $(EXEC_NAME)
