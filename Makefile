@@ -48,6 +48,12 @@ $(EXEC_NAME) : $(OBJ) src/glad.o
 	@echo "** Building obj files..."
 	$(CC) -c $< -o $@
 
+bnr : 
+	@echo "** Build start"
+	make
+	@echo "** Excecuting.."
+	./$(EXEC_NAME)
+
 clean :
 	@echo "** Removing object files..."
 	$(RMV)
