@@ -10,7 +10,7 @@
 const unsigned int wHeight = 600;
 const unsigned int wWidth = 800;
 
-bool wireframe = false;
+bool wireframe;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) //when windows is resized, call this function
 {
@@ -21,10 +21,15 @@ void processInput(GLFWwindow *window) //pretty much self explanatory
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        wireframe = !wireframe;
 }
 
 int main()
 {
+    wireframe = false;
+
     /**
     GLFW Initialization
     */
@@ -33,7 +38,6 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); //this tells us that we are using version 3.3 of glfw
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
 
     GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "CoolWindow", NULL, NULL);
     if (window == NULL)
@@ -52,9 +56,12 @@ int main()
         return -1;
     }
 
+    // fixes z-buffer issues
+    glEnable(GL_DEPTH_TEST);
+
     Shader shader_with_texture("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-    float vertices[] = {    //for every attribute that we add, we need to update the stride...
+    float vertices_triangles[] = {    //for every attribute that we add, we need to update the stride...
     // positions          // colors           // texture coords
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
@@ -62,25 +69,81 @@ int main()
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     };
 
+
+    // cube vertices
+    float vertices[] = {
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f), 
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
+    };
+
     /*
         3   0
         2   1
     */
-    unsigned int indices[] = {
+    unsigned int indices[] = {  //(used for ebos, but fuck ebos)
         0,1,3, //first triangle
         1,2,3 //second triangle                     
     };
 
-    /**
-    VERTEX BUFFER OBJECT & VERTEX INTERPRETATION
-    */
+    //----------------VERTEX BUFFER OBJECT & VERTEX INTERPRETATION-----------
 
-    //vertex input shader
-    unsigned int VBO;
+    unsigned int VAO, VBO;
+    //vertex buffer generation
     glGenBuffers(1, &VBO);
 
     //vertex array object generation
-    unsigned int VAO;
     glGenVertexArrays(1, &VAO);  //we can also generate multiple VAO and VBOs at the same time using an array
     glBindVertexArray(VAO);
 
@@ -89,39 +152,25 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 
-    //element buffer object so we can use more triangles for a single element and specify the order of what to use
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof (indices), indices, GL_STATIC_DRAW);
-
-
-    //telling OpenGL how to interpret the Vertex values (related to VBOs)
+    //----telling OpenGL how to interpret the Vertex values (related to VBOs)---
 
     //vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0); //0 is the location of our vertices
 
     //color attributes
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*) (3*sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*) 0);
     glEnableVertexAttribArray(1);
 
     //texture attributes added
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5* sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-
-    /**
-    WINDOW FUNCTIONS
-    */
     if (wireframe)
-    {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //WIREFRAME MODE ON
-    }
 
-    /*
-    Texture loading.
-    */
+    //--------------Texture loading--------------
+    
     int width, height, nrChannels;
     unsigned char* data = stbi_load("textures_placeholder/container.jpg", &width, &height, &nrChannels, 0);
     stbi_set_flip_vertically_on_load(true);
@@ -142,9 +191,7 @@ int main()
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
-    {
         std::cout << "Failed to load texture. File not found." << std::endl;
-    }
 
     stbi_image_free(data);  //free data after texture generation.
 
@@ -165,18 +212,16 @@ int main()
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
-    {
         std::cout << "Failed to load texture" << std::endl;
-    }
+    
     stbi_image_free(data);
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
     shader_with_texture.use(); // don't forget to activate/use the shader before setting uniforms!
 
-    // either set it manually like so:
-    glUniform1i(glGetUniformLocation(shader_with_texture.ID, "texture1"), 0);
-    // or set it via the texture class
+    // setting up texture uniform
+    shader_with_texture.setInt("texture1", 0);
     shader_with_texture.setInt("texture2", 1);
 
 
@@ -185,31 +230,64 @@ int main()
         processInput(window);
     
         glClearColor(0.2f, 0, 0.3f, 1.0f); //background color.
-        glClear(GL_COLOR_BUFFER_BIT); //we clear the color buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //we clear the color buffer and z buffer
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+        shader_with_texture.use(); // activate shader
 
-        /*
-            rotation over time:
-        */
-        glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        if (wireframe)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //WIREFRAME MODE ON
+        else 
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        shader_with_texture.use();
+        //-------------COORDS--------------------------
 
+        // model matrix creation, local coords --> world coords
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
 
-        //code for activating the rotating and passing it onto the shader
-        unsigned int transformLoc = glGetUniformLocation(shader_with_texture.ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+        // rotate model over time
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));  
 
+        // view matrix, world coords ---> to view coords
+        glm::mat4 view = glm::mat4(1.0f);
+        // note that we're translating the scene in the reverse direction of where we want to move
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
-        glBindVertexArray(VAO); //binding to a vao automatically also binds every vbos or ebos in it
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*) 0);
+        // projection matrix, in order to have perspective projection applied
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), (float) wWidth / wHeight, 0.1f, 100.0f);
+
+        // loading the matrices into the uniform in the vertex shader
+        int modelLoc = glGetUniformLocation(shader_with_texture.ID, "model"); /* model matrix loading */
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+        int viewLoc = glGetUniformLocation(shader_with_texture.ID, "view");  /* view matrix loading */
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+        int projectionLoc = glGetUniformLocation(shader_with_texture.ID, "projection"); /* projection matrix loading */
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        //---------------------------------------
+        
+        glBindVertexArray(VAO); // binding to a vao automatically also binds every vbos or ebos in it
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for(unsigned int i = 1; i < 10; i++)    // many cuuuuubessss
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]*(float)glfwGetTime() );
+            float angle = 20.0f * i; 
+            model = glm::rotate(model, (float)glfwGetTime() *glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            shader_with_texture.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwSwapBuffers(window); // we are using double buffers to display the image to avoid flickeringS
         glfwPollEvents();        // checks if any events are triggered
@@ -217,7 +295,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    //glDeleteBuffers(1, &EBO);
 
     glfwTerminate(); //deallocates all resources
     return 0;
