@@ -137,6 +137,16 @@ int main()
         1,2,3 //second triangle                     
     };
 
+
+    //----------------CAMERA SETUP---------------------
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraDirection = glm::normalize(cameraDirection - cameraTarget); // it's pointing at the opposite
+                                                                                // thing of this dir 
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); 
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));    // up vector
+    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);              // right vector
+
     //----------------VERTEX BUFFER OBJECT & VERTEX INTERPRETATION-----------
 
     unsigned int VAO, VBO;
@@ -257,6 +267,11 @@ int main()
         glm::mat4 view = glm::mat4(1.0f);
         // note that we're translating the scene in the reverse direction of where we want to move
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+        const float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));  
 
         // projection matrix, in order to have perspective projection applied
         glm::mat4 projection;

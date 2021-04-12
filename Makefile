@@ -33,7 +33,7 @@ GL_INCLUDE_DIR = $(DIR_PREFIX)/include/GLFW
 GLFLAGS = -lpthread -lglfw -lGL -lX11 -lXrandr -lXi -ldl 
 CFLAGS = $(GLFLAGS) -I$(GL_INCLUDE_DIR) -Wall -O0
 
-EXEC_NAME = AngelinoEngine
+EXEC_NAME = AngelinoEngine # Fix, placeholder name until i find a way to handle spaces
 
 .PHONY : all clean # Target that arent a file
 
