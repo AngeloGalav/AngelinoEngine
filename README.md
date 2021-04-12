@@ -11,7 +11,7 @@ You can follow the same guide that I'm following at https://learnopengl.com/ .
 - [x] Linear Tranformations
 - [x] Coordinate System
 - [x] 3D Viewport
-- [ ] Camera system
+- [x] Camera system
 - [ ] Movable Camera
 
 ...new features will be added in the future.
