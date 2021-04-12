@@ -13,6 +13,8 @@ You can follow the same guide that I'm following at https://learnopengl.com/ .
 - [x] 3D Viewport
 - [x] Camera system
 - [ ] Movable Camera
+- [ ] Text rendering support
+- [ ] Cross-platform compilation
 
 ...new features will be added in the future.
 
