@@ -1,8 +1,12 @@
 # AngelinoEngine
 
+> :warning: **This project has been abandoned**, don't expect any new updates. 
+
 A project about making a cross-platform OpenGL 3D renderer by using the GLFW library and at which I'm working on in my spare time (if I have any since Uni is occupying most of my days).
 You can follow the same guide that I'm following at https://learnopengl.com/ .
 
+## Screenshot
+![screenshot](screenshots/screenshot.png)
 
 ## Current Status and Milestones 
 
